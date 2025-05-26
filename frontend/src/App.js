@@ -35,7 +35,7 @@ export default function App() {
       //   `http://localhost:8000/api/stock/${symbol}?period=${periodToFetch}`
       // );
       const resp = await axios.get(
-        `/api/stockinfo?symbol=${symbol}&period=${periodToFetch}`
+        `/api/stock?symbol=${symbol}&period=${periodToFetch}`
       );
       setData(resp.data);
     } catch {
