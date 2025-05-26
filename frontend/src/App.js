@@ -31,8 +31,11 @@ export default function App() {
     setError(null);
     setData(null);
     try {
+      // const resp = await axios.get(
+      //   `http://localhost:8000/api/stock/${symbol}?period=${periodToFetch}`
+      // );
       const resp = await axios.get(
-        `http://localhost:8000/api/stock/${symbol}?period=${periodToFetch}`
+        `/api/stockinfo?symbol=${symbol}&period=${periodToFetch}`
       );
       setData(resp.data);
     } catch {
