@@ -74,7 +74,7 @@ export default function App() {
   return (
     <div className={`min-h-screen p-6 ${darkMode ? "bg-gray-900 text-white" : "bg-white text-black"}`}>
       <header className="max-w-5xl mx-auto mb-8 flex flex-col sm:flex-row gap-4 items-center justify-between">
-        <h1 className="text-3xl font-bold">Painel de Ações</h1>
+        <h1 className="text-3xl font-bold">Actions Panel</h1>
         <button
           className={`px-3 py-1 rounded ${darkMode ? "bg-yellow-400 text-gray-900" : "bg-gray-800 text-white"}`}
           onClick={() => setDarkMode(dm => !dm)}

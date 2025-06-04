@@ -91,17 +91,27 @@ module.exports = async (req, res) => {
             typicalPrice,
             info: {
                 longName: ticker.price.longName,
+                shortName: ticker.price.shortName,
                 sector: ticker.summaryProfile?.sector,
                 industry: ticker.summaryProfile?.industry,
                 marketCap: ticker.price.marketCap,
+                currency: ticker.price.currency,
                 beta: ticker.summaryDetail?.beta,
                 dividendYield: ticker.summaryDetail?.dividendYield,
+                dividendRate: ticker.summaryDetail?.dividendRate,
+                payoutRatio: ticker.summaryDetail?.payoutRatio,
                 previousClose: ticker.summaryDetail?.previousClose,
+                forwardPE: ticker.summaryDetail?.forwardPE,
+                pegRatio: ticker.summaryDetail?.pegRatio,
                 fiftyTwoWeekHigh: ticker.summaryDetail?.fiftyTwoWeekHigh,
                 fiftyTwoWeekLow: ticker.summaryDetail?.fiftyTwoWeekLow,
-                website: ticker.summaryProfile?.website,
-                shortName: ticker.price.shortName,
-                currency: ticker.price.currency,
+                eps: ticker.defaultKeyStatistics?.trailingEps,
+                roe: ticker.financialData?.returnOnEquity,
+                profitMargin: ticker.financialData?.profitMargins,
+                debtToEquity: ticker.financialData?.debtToEquity,
+                freeCashflow: ticker.financialData?.freeCashflow,
+                fullTimeEmployees: ticker.summaryProfile?.fullTimeEmployees,
+                website: ticker.summaryProfile?.website
             }
         });
     } catch (err) {
