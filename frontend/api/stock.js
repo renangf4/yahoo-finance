@@ -24,6 +24,9 @@ function getPeriodRange(period) {
         case "1y":
             start.setFullYear(now.getFullYear() - 1);
             break;
+        case "5y":
+            start.setFullYear(now.getFullYear() - 5);
+            break;
         default:
             start.setMonth(now.getMonth() - 1);
     }
@@ -54,8 +57,13 @@ module.exports = async (req, res) => {
     const yfSymbol = formatSymbol(symbol);
 
     try {
-        const { period1, period2 } = getPeriodRange(period);
-        const chart = await yf.chart(yfSymbol, { period1, period2, interval: "1d" });
+        let chart;
+        if (period === "max") {
+            chart = await yf.chart(yfSymbol, { period: "max", interval: "1d" });
+        } else {
+            const { period1, period2 } = getPeriodRange(period);
+            chart = await yf.chart(yfSymbol, { period1, period2, interval: "1d" });
+        }
         const hist = chart.quotes || [];
 
         const adjClose = hist.map(item => item.adjclose ?? item.close);
@@ -65,7 +73,7 @@ module.exports = async (req, res) => {
             return ((item.close - prevClose) / prevClose) * 100;
         });
 
-        const avgVolume = hist.reduce((sum, item) => sum + item.volume, 0) / hist.length;
+        const avgVolume = hist.reduce((sum, item) => sum + item.volume, 0) / (hist.length || 1);
         const volumeRelativo = hist.map(item => item.volume / avgVolume);
 
         const vwap = hist.map(item => {
@@ -75,7 +83,14 @@ module.exports = async (req, res) => {
 
         const typicalPrice = hist.map(item => (item.high + item.low + item.close) / 3);
 
-        const ticker = await yf.quoteSummary(yfSymbol, { modules: ["price", "summaryDetail", "summaryProfile"] });
+        const modules = [
+            "price",
+            "summaryDetail",
+            "summaryProfile",
+            "defaultKeyStatistics",
+            "financialData"
+        ];
+        const ticker = await yf.quoteSummary(yfSymbol, { modules });
 
         res.json({
             dates: hist.map(item => item.date * 1000),
@@ -90,12 +105,12 @@ module.exports = async (req, res) => {
             vwap,
             typicalPrice,
             info: {
-                longName: ticker.price.longName,
-                shortName: ticker.price.shortName,
+                longName: ticker.price?.longName,
+                shortName: ticker.price?.shortName,
                 sector: ticker.summaryProfile?.sector,
                 industry: ticker.summaryProfile?.industry,
-                marketCap: ticker.price.marketCap,
-                currency: ticker.price.currency,
+                marketCap: ticker.price?.marketCap,
+                currency: ticker.price?.currency,
                 beta: ticker.summaryDetail?.beta,
                 dividendYield: ticker.summaryDetail?.dividendYield,
                 dividendRate: ticker.summaryDetail?.dividendRate,

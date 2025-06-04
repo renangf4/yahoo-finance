@@ -49,17 +49,27 @@ export default function App() {
   }, [period]);
 
   const labels = {
-    name: "Name",
-    sector: "Sector",
-    industry: "Industry",
-    marketCap: "Market Cap",
-    beta: "Beta",
-    dividendYield: "Dividend Yield",
-    previousClose: "Previous Close",
-    weekHigh: "52 Week High",
-    weekLow: "52 Week Low",
-    website: "Website",
-    companyInfo: "Company Information"
+      name: "Name",
+      sector: "Sector",
+      industry: "Industry",
+      marketCap: "Market Cap",
+      beta: "Beta",
+      dividendYield: "Dividend Yield",
+      dividendRate: "Dividend Rate",
+      payoutRatio: "Payout Ratio",
+      previousClose: "Previous Close",
+      forwardPE: "Forward P/E",
+      pegRatio: "PEG Ratio",
+      eps: "EPS (TTM)",
+      roe: "ROE",
+      profitMargin: "Profit Margin",
+      debtToEquity: "Debt/Equity",
+      freeCashflow: "Free Cash Flow",
+      weekHigh: "52 Week High",
+      weekLow: "52 Week Low",
+      fullTimeEmployees: "Full-Time Employees",
+      website: "Website",
+      companyInfo: "Company Information"
   };
 
   const periodLabels = {
