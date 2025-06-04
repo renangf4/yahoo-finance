@@ -21,7 +21,7 @@ export default function CompanyInfo({ info, labels, darkMode }) {
     const currency = info.currency || "BRL";
     return (
         <div className={`w-full max-w-5xl mx-auto mb-6 p-4 rounded-lg shadow-lg ${darkMode ? "bg-gray-800 text-white" : "bg-white text-black"}`}>
-            <h2 className="text-2xl font-bold mb-4">{labels.companyInfo}</h2>
+            <h2 className="text-2xl font-bold mb-4">{labels.companyInfo} - {info.longName || '—'}</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className={`p-4 rounded-lg shadow ${darkMode ? "bg-gray-700" : "bg-gray-100"}`}>
                     <span className="font-semibold block mb-1">{labels.name}</span>

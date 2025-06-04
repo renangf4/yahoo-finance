@@ -1,17 +1,10 @@
 import React from "react";
-import {
-    ResponsiveContainer,
-    LineChart,
-    Line,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip,
-    Legend,
-} from "recharts";
+import Highcharts from "highcharts";
+import HighchartsReact from "highcharts-react-official";
 import dayjs from "dayjs";
 
-// Função para formatar moeda
+// Para funcionar com datas em timestamp (milissegundos) vindos da API
+// Se data.dates já é timestamp, não precisa de parse, só validamos se é número
 function formatCurrency(value, currency = "BRL") {
     if (value === undefined || value === null) return "—";
     const locale =
@@ -26,93 +19,106 @@ function formatCurrency(value, currency = "BRL") {
     });
 }
 
-// Função para formatar volume (sem símbolo de moeda, só separador)
 function formatVolume(value) {
     if (value === undefined || value === null) return "—";
     return value.toLocaleString("en-US");
 }
 
+const metrics = [
+    { key: 'close', label: 'Fechamento', color: '#8884d8', type: 'line', format: formatCurrency },
+    { key: 'open', label: 'Abertura', color: '#FF9800', type: 'line', format: formatCurrency },
+    { key: 'high', label: 'Máxima', color: '#4CAF50', type: 'line', format: formatCurrency },
+    { key: 'low', label: 'Mínima', color: '#F44336', type: 'line', format: formatCurrency },
+    { key: 'volume', label: 'Volume', color: '#82ca9d', type: 'column', format: formatVolume },
+];
+
+function SingleMetricChart({ data, metric, currency, darkMode, title }) {
+    // data.dates já é timestamp em ms
+    const seriesData = (data?.dates || []).map((timestamp, i) => {
+        const y = data[metric.key]?.[i];
+        return (typeof timestamp === "number" && y !== undefined) ? [timestamp, y] : null;
+    }).filter(Boolean);
+
+    const options = {
+        chart: {
+            backgroundColor: darkMode ? "#1f2937" : "#fff",
+            style: { color: darkMode ? "#fff" : "#222" },
+            height: 350,
+        },
+        title: {
+            text: `${title} - ${metric.label}`,
+            style: { color: darkMode ? "#fff" : "#222" }
+        },
+        xAxis: {
+            type: 'datetime',
+            labels: { style: { color: darkMode ? "#fff" : "#222" } }
+        },
+        yAxis: {
+            title: { text: metric.label, style: { color: metric.color } },
+            labels: {
+                formatter: function () {
+                    return metric.key === 'volume'
+                        ? metric.format(this.value)
+                        : metric.format(this.value, currency);
+                },
+                style: { color: metric.color }
+            },
+        },
+        tooltip: {
+            backgroundColor: darkMode ? "#1f2937" : "#fff",
+            style: { color: darkMode ? "#fff" : "#222" },
+            formatter: function () {
+                const date = dayjs(this.x).format("DD/MM/YYYY");
+                return `
+                    <b>${date}</b><br/>
+                    ${metric.label}: <b>${
+                        metric.key === 'volume'
+                            ? metric.format(this.y)
+                            : metric.format(this.y, currency)
+                    }</b>
+                `;
+            }
+        },
+        series: [{
+            name: metric.label,
+            type: metric.type,
+            data: seriesData,
+            color: metric.color
+        }],
+        credits: { enabled: false }
+    };
+    // 1/2 coluna (usando grid: grid-cols-1 md:grid-cols-2)
+    return (
+        <div className={`p-4`}>
+            <div className={`rounded shadow ${darkMode ? "bg-gray-800 text-white" : "bg-white text-black"}`}>
+                <HighchartsReact highcharts={Highcharts} options={options} />
+            </div>
+        </div>
+    );
+}
+
 export default function StockChart({
     data,
     darkMode,
-    title = "Histórico",
-    closeLabel = "Fechamento",
-    volumeLabel = "Volume"
+    title = "Histórico"
 }) {
     const currency = data?.info?.currency || "BRL";
-
-    // Formata datas para o eixo X
-    const chartData = data?.dates?.map((date, i) => ({
-        date: dayjs(date).format(data.dates.length > 90 ? "MM/YYYY" : "DD/MM/YYYY"),
-        close: data.close[i],
-        volume: data.volume[i],
-    })) || [];
-
-    // Customiza Tooltip para aplicar máscara de moeda e de volume
-    function CustomTooltip({ active, payload, label }) {
-        if (active && payload && payload.length) {
-            return (
-                <div style={{
-                    background: darkMode ? "#1f2937" : "#fff",
-                    color: darkMode ? "#fff" : "#222",
-                    border: "1px solid #ccc",
-                    borderRadius: "6px",
-                    padding: "12px"
-                }}>
-                    <div><strong>{label}</strong></div>
-                    <div>{closeLabel}: {formatCurrency(payload[0].value, currency)}</div>
-                    <div>{volumeLabel}: {formatVolume(payload[1].value)}</div>
-                </div>
-            );
-        }
-        return null;
+    if (!data || !data.dates || data.dates.length === 0) {
+        return <div>Nenhum dado para mostrar.</div>
     }
-
+    // grid-cols-1 em mobile, grid-cols-2 (duas colunas) em md+
     return (
-        <div className={`max-w-5xl mx-auto p-6 rounded shadow ${darkMode ? "bg-gray-800 text-white" : "bg-white text-black"}`}>
-            <h2 className="text-xl font-bold mb-4">{title}</h2>
-            <ResponsiveContainer width="100%" height={400}>
-                <LineChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "#444" : "#eee"} />
-                    <XAxis
-                        dataKey="date"
-                        stroke={darkMode ? "#fff" : "#222"}
-                        minTickGap={20}
-                        angle={-45}
-                        textAnchor="end"
-                        height={70}
-                    />
-                    <YAxis
-                        yAxisId="left"
-                        orientation="left"
-                        stroke="#8884d8"
-                        tickFormatter={val => formatCurrency(val, currency)}
-                    />
-                    <YAxis
-                        yAxisId="right"
-                        orientation="right"
-                        stroke="#82ca9d"
-                        tickFormatter={formatVolume}
-                    />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Legend />
-                    <Line
-                        yAxisId="left"
-                        type="monotone"
-                        dataKey="close"
-                        stroke="#8884d8"
-                        activeDot={{ r: 8 }}
-                        name={closeLabel}
-                    />
-                    <Line
-                        yAxisId="right"
-                        type="monotone"
-                        dataKey="volume"
-                        stroke="#82ca9d"
-                        name={volumeLabel}
-                    />
-                </LineChart>
-            </ResponsiveContainer>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {metrics.map(metric => (
+                <SingleMetricChart
+                    key={metric.key}
+                    data={data}
+                    metric={metric}
+                    currency={currency}
+                    darkMode={darkMode}
+                    title={title}
+                />
+            ))}
         </div>
     );
 }

@@ -68,7 +68,7 @@ module.exports = async (req, res) => {
         const ticker = await yf.quoteSummary(yfSymbol, { modules: ["price", "summaryDetail", "summaryProfile"] });
 
         res.json({
-            dates: hist.map(item => new Date(item.date * 1000).toISOString().slice(0, 10)),
+            dates: hist.map(item => item.date * 1000),
             open: hist.map(item => item.open),
             high: hist.map(item => item.high),
             low: hist.map(item => item.low),

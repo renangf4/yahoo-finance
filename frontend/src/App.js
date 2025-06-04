@@ -9,12 +9,13 @@ const defaultTickers = [
 ];
 
 export default function App() {
-  const [ticker, setTicker] = useState("");
+  const [ticker, setTicker] = useState(defaultTickers[0]);
   const [period, setPeriod] = useState("1mo");
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [darkMode, setDarkMode] = useState(true);
+  const [loadedTicker, setLoadedTicker] = useState(defaultTickers[0]);
 
   useEffect(() => {
     if (darkMode) {
@@ -31,13 +32,11 @@ export default function App() {
     setError(null);
     setData(null);
     try {
-      // const resp = await axios.get(
-      //   `http://localhost:8000/api/stock/${symbol}?period=${periodToFetch}`
-      // );
       const resp = await axios.get(
-        `/api/stock?symbol=${symbol}&period=${periodToFetch}`
+        `https://yahoo-finance-five.vercel.app/api/stock?symbol=${symbol}&period=${periodToFetch}`
       );
       setData(resp.data);
+      setLoadedTicker(symbol);
     } catch {
       setError("Erro ao buscar dados. Verifique o ticker.");
     } finally {
@@ -45,13 +44,10 @@ export default function App() {
     }
   }
 
-  // Atualiza gráfico quando mudar o período e já houver ticker buscado
   useEffect(() => {
-    if (ticker) fetchStock(ticker, period);
-    // eslint-disable-next-line
+    if (ticker) fetchStock(defaultTickers[0], period);
   }, [period]);
 
-  // Labels fixos para CompanyInfo
   const labels = {
     name: "Nome",
     sector: "Setor",
@@ -117,35 +113,37 @@ export default function App() {
         <CompanyInfo info={data.info} labels={labels} darkMode={darkMode} />
       )}
 
-      <div className="max-w-5xl mx-auto mb-6 flex gap-2">
-        {[
-          { key: "1mo", label: "1 Mês" },
-          { key: "3mo", label: "3 Meses" },
-          { key: "6mo", label: "6 Meses" },
-          { key: "1y", label: "1 Ano" },
-          { key: "5y", label: "5 Anos" },
-          { key: "max", label: "Tudo" }
-        ].map(opt => (
-          <button
-            key={opt.key}
-            onClick={() => setPeriod(opt.key)}
-            className={`px-3 py-1 rounded ${period === opt.key
-              ? "font-bold border-b-2 border-blue-500"
-              : darkMode
-                ? "bg-gray-800 text-white"
-                : "bg-gray-200 text-black"
-              }`}
-          >
-            {opt.label}
-          </button>
-        ))}
-      </div>
+      {!error && (
+        <div className="max-w-5xl mx-auto mb-6 flex gap-2">
+          {[
+            { key: "1mo", label: "1 Mês" },
+            { key: "3mo", label: "3 Meses" },
+            { key: "6mo", label: "6 Meses" },
+            { key: "1y", label: "1 Ano" },
+            { key: "5y", label: "5 Anos" },
+            { key: "max", label: "Tudo" }
+          ].map(opt => (
+            <button
+              key={opt.key}
+              onClick={() => setPeriod(opt.key)}
+              className={`px-3 py-1 rounded ${period === opt.key
+                ? "font-bold border-b-2 border-blue-500"
+                : darkMode
+                  ? "bg-gray-800 text-white"
+                  : "bg-gray-200 text-black"
+                }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {data && (
         <StockChart
           data={data}
           darkMode={darkMode}
-          title={`Histórico (${period})`}
+          title={`Histórico (${loadedTicker} - ${period})`}
           closeLabel="Fechamento"
           volumeLabel="Volume"
         />
