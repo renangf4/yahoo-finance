@@ -31,7 +31,8 @@ const metrics = [
     { key: 'volume', label: 'Volume', color: '#82ca9d', type: 'column', format: formatVolume },
     { key: 'changePercent', label: '% Change', color: '#F06292', type: 'column', format: v => v.toFixed(2) + '%' },
     { key: 'volumeRelativo', label: 'Vol Rel', color: '#26A69A', type: 'column', format: v => v.toFixed(2) },
-    { key: 'vwap', label: 'VWAP', color: '#FF7043', type: 'line', format: formatCurrency }
+    { key: 'vwap', label: 'VWAP', color: '#FF7043', type: 'line', format: formatCurrency },
+    { key: 'typicalPrice', label: 'Typical Price', color: '#5C6BC0', type: 'line', format: formatCurrency }
 ];
 
 function SingleMetricChart({ data, metric, currency, darkMode, title }) {

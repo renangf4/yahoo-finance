@@ -73,6 +73,8 @@ module.exports = async (req, res) => {
             return (priceAvg * item.volume) / item.volume || 0;
         });
 
+        const typicalPrice = hist.map(item => (item.high + item.low + item.close) / 3);
+
         const ticker = await yf.quoteSummary(yfSymbol, { modules: ["price", "summaryDetail", "summaryProfile"] });
 
         res.json({
@@ -86,6 +88,7 @@ module.exports = async (req, res) => {
             changePercent: changes,
             volumeRelativo,
             vwap,
+            typicalPrice,
             info: {
                 longName: ticker.price.longName,
                 sector: ticker.summaryProfile?.sector,
