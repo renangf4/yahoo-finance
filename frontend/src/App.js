@@ -78,7 +78,7 @@ export default function App() {
     "6mo": "6 Months",
     "1y": "1 Year",
     "5y": "5 Years",
-    "max": "All"
+    // "max": "All"
   };
 
   return (
