@@ -56,13 +56,7 @@ module.exports = async (req, res) => {
     try {
         let chart;
         if (period === "max") {
-            // Tente range: "max" ou period: "max"
-            try {
-                chart = await yf.chart(yfSymbol, { range: "max", interval: "1d" });
-            } catch (e) {
-                // fallback para period: "max" se range falhar
-                chart = await yf.chart(yfSymbol, { period: "max", interval: "1d" });
-            }
+            chart = await yf.chart(yfSymbol, { range: "max", interval: "1d" });
         } else {
             const { period1, period2 } = getPeriodRange(period);
             chart = await yf.chart(yfSymbol, { period1, period2, interval: "1d" });
