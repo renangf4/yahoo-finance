@@ -30,10 +30,7 @@ function getPeriodRange(period) {
         default:
             start.setMonth(now.getMonth() - 1);
     }
-    return {
-        period1: start,
-        period2: now
-    };
+    return { period1: start, period2: now };
 }
 
 module.exports = async (req, res) => {
@@ -59,7 +56,13 @@ module.exports = async (req, res) => {
     try {
         let chart;
         if (period === "max") {
-            chart = await yf.chart(yfSymbol, { period: "max", interval: "1d" });
+            // Tente range: "max" ou period: "max"
+            try {
+                chart = await yf.chart(yfSymbol, { range: "max", interval: "1d" });
+            } catch (e) {
+                // fallback para period: "max" se range falhar
+                chart = await yf.chart(yfSymbol, { period: "max", interval: "1d" });
+            }
         } else {
             const { period1, period2 } = getPeriodRange(period);
             chart = await yf.chart(yfSymbol, { period1, period2, interval: "1d" });
@@ -130,7 +133,7 @@ module.exports = async (req, res) => {
             }
         });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Erro ao buscar dados para o ticker." });
+        console.error('Erro detalhado:', err);
+        res.status(500).json({ error: "Erro ao buscar dados para o ticker.", details: String(err) });
     }
 };
