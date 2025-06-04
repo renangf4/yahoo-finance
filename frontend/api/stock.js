@@ -33,16 +33,29 @@ function getPeriodRange(period) {
     };
 }
 
-const express = require("express");
-const cors = require("cors");
+// Vercel handler
+module.exports = async (req, res) => {
+    // CORS: permita qualquer origem para dev
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-const app = express();
-app.use(cors());
+    // Pré-flight para CORS
+    if (req.method === "OPTIONS") {
+        res.status(200).end();
+        return;
+    }
 
-app.get("/api/stock/:symbol", async (req, res) => {
-    const { symbol } = req.params;
+    const symbol = req.query.symbol;
     const period = req.query.period || "1mo";
+
+    if (!symbol) {
+        res.status(400).json({ error: "Símbolo não informado." });
+        return;
+    }
+
     const yfSymbol = formatSymbol(symbol);
+
     try {
         const { period1, period2 } = getPeriodRange(period);
         const chart = await yf.chart(yfSymbol, {
@@ -80,9 +93,4 @@ app.get("/api/stock/:symbol", async (req, res) => {
         console.error(err);
         res.status(500).json({ error: "Erro ao buscar dados para o ticker." });
     }
-});
-
-const PORT = process.env.PORT || 8000;
-app.listen(PORT, () => {
-    console.log(`Node backend running at http://localhost:${PORT}`);
-});
+};
