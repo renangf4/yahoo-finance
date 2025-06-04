@@ -125,7 +125,7 @@ export default function App() {
         ))}
       </div>
 
-      {loading && <p className="text-center font-semibold my-6">Carregando...</p>}
+      {loading && <p className="text-center font-semibold my-6">Loading...</p>}
       {error && <p className="text-center text-red-500 font-semibold my-6">{error}</p>}
 
       {data && data.info && (
