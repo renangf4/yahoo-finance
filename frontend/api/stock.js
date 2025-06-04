@@ -33,14 +33,11 @@ function getPeriodRange(period) {
     };
 }
 
-// Vercel handler
 module.exports = async (req, res) => {
-    // CORS: permita qualquer origem para dev
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-    // Pré-flight para CORS
     if (req.method === "OPTIONS") {
         res.status(200).end();
         return;
@@ -58,12 +55,23 @@ module.exports = async (req, res) => {
 
     try {
         const { period1, period2 } = getPeriodRange(period);
-        const chart = await yf.chart(yfSymbol, {
-            period1,
-            period2,
-            interval: "1d"
-        });
+        const chart = await yf.chart(yfSymbol, { period1, period2, interval: "1d" });
         const hist = chart.quotes || [];
+
+        const adjClose = hist.map(item => item.adjclose ?? item.close);
+        const changes = hist.map((item, index) => {
+            if (index === 0) return 0;
+            const prevClose = hist[index - 1].close;
+            return ((item.close - prevClose) / prevClose) * 100;
+        });
+
+        const avgVolume = hist.reduce((sum, item) => sum + item.volume, 0) / hist.length;
+        const volumeRelativo = hist.map(item => item.volume / avgVolume);
+
+        const vwap = hist.map(item => {
+            const priceAvg = (item.high + item.low + item.close) / 3;
+            return (priceAvg * item.volume) / item.volume || 0;
+        });
 
         const ticker = await yf.quoteSummary(yfSymbol, { modules: ["price", "summaryDetail", "summaryProfile"] });
 
@@ -74,6 +82,10 @@ module.exports = async (req, res) => {
             low: hist.map(item => item.low),
             close: hist.map(item => item.close),
             volume: hist.map(item => item.volume),
+            adjClose,
+            changePercent: changes,
+            volumeRelativo,
+            vwap,
             info: {
                 longName: ticker.price.longName,
                 sector: ticker.summaryProfile?.sector,

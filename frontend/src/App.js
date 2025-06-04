@@ -38,7 +38,7 @@ export default function App() {
       setData(resp.data);
       setLoadedTicker(symbol);
     } catch {
-      setError("Erro ao buscar dados. Verifique o ticker.");
+      setError("Error fetching data. Check the ticker.");
     } finally {
       setLoading(false);
     }
@@ -49,17 +49,26 @@ export default function App() {
   }, [period]);
 
   const labels = {
-    name: "Nome",
-    sector: "Setor",
-    industry: "Indústria",
+    name: "Name",
+    sector: "Sector",
+    industry: "Industry",
     marketCap: "Market Cap",
     beta: "Beta",
     dividendYield: "Dividend Yield",
-    previousClose: "Fechamento Anterior",
-    weekHigh: "Máximo 52 Semanas",
-    weekLow: "Mínimo 52 Semanas",
-    website: "Site",
-    companyInfo: "Informações da Empresa"
+    previousClose: "Previous Close",
+    weekHigh: "52 Week High",
+    weekLow: "52 Week Low",
+    website: "Website",
+    companyInfo: "Company Information"
+  };
+
+  const periodLabels = {
+    "1mo": "1 Month",
+    "3mo": "3 Months",
+    "6mo": "6 Months",
+    "1y": "1 Year",
+    "5y": "5 Years",
+    "max": "All"
   };
 
   return (
@@ -70,7 +79,7 @@ export default function App() {
           className={`px-3 py-1 rounded ${darkMode ? "bg-yellow-400 text-gray-900" : "bg-gray-800 text-white"}`}
           onClick={() => setDarkMode(dm => !dm)}
         >
-          {darkMode ? "Modo Claro" : "Modo Escuro"}
+          {darkMode ? "Light Mode" : "Dark Mode"}
         </button>
       </header>
 
@@ -78,7 +87,7 @@ export default function App() {
         <input
           type="text"
           className={`px-3 py-2 rounded border w-full ${darkMode ? "bg-gray-700 border-gray-600 text-white" : "bg-white border-gray-300 text-black"}`}
-          placeholder="Digite o ticker, ex: AAPL ou LOGG3"
+          placeholder="Enter the ticker, e.g. AAPL or LOGG3"
           value={ticker}
           onChange={e => setTicker(e.target.value.toUpperCase())}
         />
@@ -87,7 +96,7 @@ export default function App() {
           className={`px-4 py-2 rounded font-semibold ${darkMode ? "bg-blue-600 text-white" : "bg-blue-400 text-black"}`}
           disabled={!ticker}
         >
-          Buscar
+          Search
         </button>
       </div>
 
@@ -115,25 +124,19 @@ export default function App() {
 
       {!error && (
         <div className="max-w-5xl mx-auto mb-6 flex gap-2">
-          {[
-            { key: "1mo", label: "1 Mês" },
-            { key: "3mo", label: "3 Meses" },
-            { key: "6mo", label: "6 Meses" },
-            { key: "1y", label: "1 Ano" },
-            { key: "5y", label: "5 Anos" },
-            { key: "max", label: "Tudo" }
-          ].map(opt => (
+          {Object.entries(periodLabels).map(([key, label]) => (
             <button
-              key={opt.key}
-              onClick={() => setPeriod(opt.key)}
-              className={`px-3 py-1 rounded ${period === opt.key
-                ? "font-bold border-b-2 border-blue-500"
-                : darkMode
-                  ? "bg-gray-800 text-white"
-                  : "bg-gray-200 text-black"
-                }`}
+              key={key}
+              onClick={() => setPeriod(key)}
+              className={`px-3 py-1 rounded ${
+                period === key
+                  ? "font-bold border-b-2 border-blue-500"
+                  : darkMode
+                    ? "bg-gray-800 text-white"
+                    : "bg-gray-200 text-black"
+              }`}
             >
-              {opt.label}
+              {label}
             </button>
           ))}
         </div>
@@ -143,8 +146,8 @@ export default function App() {
         <StockChart
           data={data}
           darkMode={darkMode}
-          title={`Histórico (${loadedTicker} - ${period})`}
-          closeLabel="Fechamento"
+          title={`History (${loadedTicker} - ${periodLabels[period] || period})`}
+          closeLabel="Closing"
           volumeLabel="Volume"
         />
       )}

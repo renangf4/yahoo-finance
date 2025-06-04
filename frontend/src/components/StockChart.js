@@ -3,8 +3,6 @@ import Highcharts from "highcharts";
 import HighchartsReact from "highcharts-react-official";
 import dayjs from "dayjs";
 
-// Para funcionar com datas em timestamp (milissegundos) vindos da API
-// Se data.dates já é timestamp, não precisa de parse, só validamos se é número
 function formatCurrency(value, currency = "BRL") {
     if (value === undefined || value === null) return "—";
     const locale =
@@ -25,18 +23,24 @@ function formatVolume(value) {
 }
 
 const metrics = [
-    { key: 'close', label: 'Fechamento', color: '#8884d8', type: 'line', format: formatCurrency },
-    { key: 'open', label: 'Abertura', color: '#FF9800', type: 'line', format: formatCurrency },
-    { key: 'high', label: 'Máxima', color: '#4CAF50', type: 'line', format: formatCurrency },
-    { key: 'low', label: 'Mínima', color: '#F44336', type: 'line', format: formatCurrency },
+    { key: 'close', label: 'Close', color: '#1E88E5', type: 'line', format: formatCurrency },
+    { key: 'open', label: 'Open', color: '#FFC107', type: 'line', format: formatCurrency },
+    { key: 'low', label: 'Min', color: '#E53935', type: 'line', format: formatCurrency },
+    { key: 'high', label: 'Max', color: '#43A047', type: 'line', format: formatCurrency },
+    { key: 'adjClose', label: 'Adj Close', color: '#8E24AA', type: 'line', format: formatCurrency },
     { key: 'volume', label: 'Volume', color: '#82ca9d', type: 'column', format: formatVolume },
+    { key: 'changePercent', label: '% Change', color: '#F06292', type: 'column', format: v => v.toFixed(2) + '%' },
+    { key: 'volumeRelativo', label: 'Vol Rel', color: '#26A69A', type: 'column', format: v => v.toFixed(2) },
+    { key: 'vwap', label: 'VWAP', color: '#FF7043', type: 'line', format: formatCurrency }
 ];
 
 function SingleMetricChart({ data, metric, currency, darkMode, title }) {
-    // data.dates já é timestamp em ms
     const seriesData = (data?.dates || []).map((timestamp, i) => {
+        const t = (typeof timestamp === "number" && timestamp > 1e13)
+            ? Math.floor(timestamp / 1000)
+            : timestamp;
         const y = data[metric.key]?.[i];
-        return (typeof timestamp === "number" && y !== undefined) ? [timestamp, y] : null;
+        return (typeof t === "number" && y !== undefined) ? [t, y] : null;
     }).filter(Boolean);
 
     const options = {
@@ -64,6 +68,12 @@ function SingleMetricChart({ data, metric, currency, darkMode, title }) {
                 style: { color: metric.color }
             },
         },
+        legend: {
+            itemStyle: {
+            color: darkMode ? "#fff" : "#333",
+            fontWeight: "normal"
+            }
+        },
         tooltip: {
             backgroundColor: darkMode ? "#1f2937" : "#fff",
             style: { color: darkMode ? "#fff" : "#222" },
@@ -87,7 +97,6 @@ function SingleMetricChart({ data, metric, currency, darkMode, title }) {
         }],
         credits: { enabled: false }
     };
-    // 1/2 coluna (usando grid: grid-cols-1 md:grid-cols-2)
     return (
         <div className={`p-4`}>
             <div className={`rounded shadow ${darkMode ? "bg-gray-800 text-white" : "bg-white text-black"}`}>
@@ -106,7 +115,6 @@ export default function StockChart({
     if (!data || !data.dates || data.dates.length === 0) {
         return <div>Nenhum dado para mostrar.</div>
     }
-    // grid-cols-1 em mobile, grid-cols-2 (duas colunas) em md+
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {metrics.map(metric => (

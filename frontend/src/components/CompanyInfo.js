@@ -1,9 +1,7 @@
 import React from "react";
 
-// Função para formatar moeda corretamente
 function formatCurrency(value, currency = "BRL") {
     if (value === undefined || value === null) return "—";
-    // Para BRL usa pt-BR, para USD/EUR usa en-US, etc
     const locale =
         currency === "BRL" ? "pt-BR"
             : currency === "USD" ? "en-US"
@@ -17,7 +15,6 @@ function formatCurrency(value, currency = "BRL") {
 }
 
 export default function CompanyInfo({ info, labels, darkMode }) {
-    // Pega a moeda retornada pela API, se não vier assume BRL
     const currency = info.currency || "BRL";
     return (
         <div className={`w-full max-w-5xl mx-auto mb-6 p-4 rounded-lg shadow-lg ${darkMode ? "bg-gray-800 text-white" : "bg-white text-black"}`}>
